@@ -57,7 +57,7 @@
 
     .btn-action:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
 </style>
 
@@ -105,7 +105,7 @@
                             </td>
                             <td>
                                 <span class="text-primary font-weight-bold">
-                                    <i class="fas fa-gamepad mr-1"></i> 
+                                    <i class="fas fa-gamepad mr-1"></i>
                                     {{ $item->playstation->nama ?? $item->playstation->name ?? '-' }}
                                 </span>
                             </td>
@@ -116,19 +116,22 @@
                                     {{ $dokumen ? implode(', ', $dokumen) : '-' }}
                                 </small>
                             </td>
-                            <td>{{ $item->created_at->format('d M Y') }}<br><small>{{ $item->created_at->format('H:i') }} WIB</small></td>
+                            <td>
+                                {{ $item->wib->format('d M Y') }}<br>
+                                <small>{{ $item->wib->format('H:i') }} WIB</small>
+                            </td>
                             <td><span class="badge badge-light text-dark border">{{ $item->durasi ?? '-' }} Hari</span></td>
                             <td>
                                 @php
-                                    $statusClasses = [
-                                        'menunggu' => 'warning',
-                                        'disetujui' => 'primary',
-                                        'dipinjam' => 'info',
-                                        'menunggu_konfirmasi' => 'dark',
-                                        'selesai' => 'success',
-                                        'ditolak' => 'danger'
-                                    ];
-                                    $class = $statusClasses[$item->status] ?? 'secondary';
+                                $statusClasses = [
+                                'menunggu' => 'warning',
+                                'disetujui' => 'primary',
+                                'dipinjam' => 'info',
+                                'menunggu_konfirmasi' => 'dark',
+                                'selesai' => 'success',
+                                'ditolak' => 'danger'
+                                ];
+                                $class = $statusClasses[$item->status] ?? 'secondary';
                                 @endphp
                                 <span class="badge badge-status bg-{{ $class }} text-white">
                                     {{ ucfirst(str_replace('_', ' ', $item->status)) }}
