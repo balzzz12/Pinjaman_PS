@@ -163,16 +163,15 @@
                         @forelse($sewas as $item)
                         @php
                         $start = $item->waktu_mulai ?? null;
+                        $end = null;
 
                         if ($start) {
-                        $end = \Carbon\Carbon::parse($start)->addDays($item->durasi);
-                        $expired = $item->status == 'dipinjam' && now()->gt($end);
-                        } else {
-                        $end = null;
-                        $expired = false;
+                        $end = \Carbon\Carbon::parse($start)
+                        ->timezone('Asia/Jakarta')
+                        ->addDays($item->durasi);
                         }
                         @endphp
-                        <tr class="{{ $expired ? 'row-expired' : '' }}">
+                        <tr class="{{ $end && now()->gt($end) ? 'row-expired' : '' }}">
                             <td class="text-white-50 font-weight-bold">{{ $loop->iteration }}</td>
                             <td class="text-left">
                                 <div class="font-weight-bold text-white">{{ $item->playstation->nama }}</div>
@@ -190,14 +189,14 @@
                                     @endif
                             </td>
                             <td>
-                                @if($item->status == 'dipinjam' && $item->waktu_mulai)
-                                @if($expired)
-                                <span class="badge-status bg-ditolak">Waktu Habis</span>
-                                @else
-                                <span class="text-success font-weight-bold">
-                                    <i class="fas fa-clock mr-1"></i> {{ $end->diffForHumans() }}
+                                @if($item->status == 'dipinjam' && $item->waktu_mulai && $end)
+
+                                <span class="countdown text-success font-weight-bold"
+                                    data-end="{{ $end->toIso8601String() }}">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    loading...
                                 </span>
-                                @endif
+
                                 @else
                                 <span class="text-white-50">-</span>
                                 @endif
@@ -222,8 +221,8 @@
                                 @endif
                             </td>
                             <td class="text-white-50 small">
-                                {{ $item->created_at->format('d M Y') }}<br>
-                                {{ $item->created_at->format('H:i') }} WIB
+                                {{ $item->wib->format('d M Y') }}<br>
+                                {{ $item->wib->format('H:i') }} WIB
                             </td>
                             <td>
                                 <div class="d-flex justify-content-center">
@@ -332,5 +331,26 @@
             });
         });
     });
+
+    setInterval(() => {
+        document.querySelectorAll('.countdown').forEach(el => {
+            let end = new Date(el.dataset.end).getTime();
+            let now = Date.now();
+            let diff = Math.floor((end - now) / 1000);
+
+            if (diff <= 0) {
+                el.innerHTML = "Waktu Habis";
+                el.classList.remove("text-success");
+                el.classList.add("text-danger");
+                return;
+            }
+
+            let h = Math.floor(diff / 3600);
+            let m = Math.floor((diff % 3600) / 60);
+            let s = diff % 60;
+
+            el.innerHTML = `<i class="fas fa-clock mr-1"></i> ${h} jam ${m} menit ${s} detik`;
+        });
+    }, 1000);
 </script>
 @endsection
