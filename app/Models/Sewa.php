@@ -40,4 +40,18 @@ class Sewa extends Model
     {
         return $this->belongsTo(PlayStation::class);
     }
+
+    public function getWibAttribute()
+    {
+        return $this->created_at
+            ? $this->created_at->timezone('Asia/Jakarta')
+            : null;
+    }
+
+    public function getMulaiWibAttribute()
+    {
+        return $this->waktu_mulai
+            ? \Carbon\Carbon::parse($this->waktu_mulai)->timezone('Asia/Jakarta')
+            : null;
+    }
 }
