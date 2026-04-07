@@ -64,7 +64,7 @@
 
     .btn-action:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 </style>
 
@@ -124,35 +124,36 @@
                             <td>
                                 <div class="fw-semibold">{{ $item->playstation->nama ?? '-' }}</div>
                             </td>
-                            
+
                             <td>
                                 <small class="text-muted">
-                                    <i class="far fa-clock me-1"></i> {{ $item->created_at->format('d/m/Y') }}<br>
-                                    {{ $item->created_at->format('H:i') }} WIB
+                                    <i class="far fa-clock me-1"></i>
+                                    {{ $item->wib->format('d/m/Y') }}<br>
+                                    {{ $item->wib->format('H:i') }} WIB
                                 </small>
                             </td>
 
                             {{-- STATUS BADGES --}}
                             <td>
                                 @if($item->status == 'menunggu')
-                                    <span class="badge badge-status bg-warning text-dark">MENUNGGU</span>
+                                <span class="badge badge-status bg-warning text-dark">MENUNGGU</span>
                                 @elseif($item->status == 'disetujui')
-                                    <span class="badge badge-status bg-info text-white">DISETUJUI</span>
+                                <span class="badge badge-status bg-info text-white">DISETUJUI</span>
                                 @elseif($item->status == 'dipinjam')
-                                    <span class="badge badge-status bg-primary text-white">SEDANG PINJAM</span>
+                                <span class="badge badge-status bg-primary text-white">SEDANG PINJAM</span>
                                 @elseif($item->status == 'menunggu_konfirmasi')
-                                    <span class="badge badge-status bg-warning text-dark border border-dark">PENDING BALIK</span>
+                                <span class="badge badge-status bg-warning text-dark border border-dark">PENDING BALIK</span>
                                 @elseif($item->status == 'selesai')
-                                    <span class="badge badge-status bg-success text-white">SELESAI</span>
+                                <span class="badge badge-status bg-success text-white">SELESAI</span>
                                 @elseif($item->status == 'ditolak')
-                                    <span class="badge badge-status bg-danger text-white">DITOLAK</span>
+                                <span class="badge badge-status bg-danger text-white">DITOLAK</span>
                                 @endif
                             </td>
 
                             {{-- ACTION BUTTONS --}}
                             <td>
                                 <div class="d-flex justify-content-center gap-2">
-                                @if($item->status == 'menunggu')
+                                    @if($item->status == 'menunggu')
                                     <form action="{{ route('petugas.peminjaman.setujui', $item->id) }}" method="POST">
                                         @csrf
                                         <button type="submit" onclick="return confirm('Setujui peminjaman ini?')" class="btn btn-success btn-action btn-sm">
@@ -167,7 +168,7 @@
                                         </button>
                                     </form>
 
-                                @elseif($item->status == 'disetujui')
+                                    @elseif($item->status == 'disetujui')
                                     <form action="{{ route('petugas.peminjaman.serahkan', $item->id) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="btn btn-primary btn-action btn-sm">
@@ -175,7 +176,7 @@
                                         </button>
                                     </form>
 
-                                @elseif($item->status == 'dipinjam')
+                                    @elseif($item->status == 'dipinjam')
                                     <form action="{{ route('petugas.peminjaman.selesai', $item->id) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="btn btn-warning btn-action btn-sm text-dark">
@@ -183,9 +184,9 @@
                                         </button>
                                     </form>
 
-                                @else
+                                    @else
                                     <span class="text-muted small italic">No Action</span>
-                                @endif
+                                    @endif
                                 </div>
                             </td>
                         </tr>
