@@ -50,7 +50,7 @@ class AuthController extends Controller
 
         // PETUGAS
         if ($role->name == 'petugas') {
-         return redirect()->route('petugas.peminjaman.index');
+         return redirect()->route('petugas.dashboard');
         }
 
         // USER / PEMINJAM (masuk ke sidebar user)
