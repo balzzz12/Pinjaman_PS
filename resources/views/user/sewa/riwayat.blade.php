@@ -124,6 +124,18 @@
     .text-ps-accent {
         color: var(--ps-accent);
     }
+
+    .countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+    background: rgba(0, 209, 102, 0.1);
+    padding: 6px 10px;
+    border-radius: 8px;
+}
 </style>
 
 <div class="container-fluid px-lg-5 py-4">
@@ -276,6 +288,7 @@
 {{-- Script SweetAlert Tetap Sama --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
 <script>
     // ... script yang sama dari kode lama kamu ...
     document.querySelectorAll(".form-cancel").forEach(form => {
@@ -301,30 +314,96 @@
             let kode = this.getAttribute("data-kode");
 
             Swal.fire({
-                title: 'Kode Booking',
+                title: '🎟️ Tiket Booking',
                 html: `
-                <div id="kodeArea" style="padding:20px;">
-                    <h2 style="letter-spacing:4px; color:#00a2ff; font-weight:800;">
-                        ${kode}
-                    </h2>
-                    <p class="text-white-50">Tunjukkan kode ini ke petugas di lokasi</p>
-                </div>
-            `,
+    <div id="kodeArea" style="
+    padding:25px;
+    border-radius:20px;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color:white;
+    text-align:center;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position:relative;
+    overflow:hidden;
+">
+
+    <!-- efek garis tiket -->
+    <div style="
+        position:absolute;
+        top:50%;
+        left:0;
+        width:100%;
+        border-top:2px dashed rgba(255,255,255,0.2);
+    "></div>
+        
+        <h4 style="margin-bottom:10px; opacity:0.8;">
+            PS RENT TICKET
+        </h4>
+
+        <div style="
+            background:white;
+            padding:15px;
+            border-radius:15px;
+            display:inline-block;
+            margin:15px 0;
+        ">
+           <canvas id="qrCode-${kode}"></canvas>
+        </div>
+
+        <h2 style="
+            letter-spacing:5px;
+            color:#00e5ff;
+            font-weight:800;
+            margin-bottom:10px;
+        ">
+            ${kode}
+        </h2>
+
+        <p style="font-size:13px; opacity:0.8; margin-bottom:15px;">
+            Tunjukkan tiket ini ke petugas saat datang
+        </p>
+
+       <div style="
+    background: rgba(255,255,255,0.05);
+    padding:12px;
+    border-radius:10px;
+    font-size:13px;
+    line-height:1.8;
+    letter-spacing:0.3px;
+">
+            <div>⚠️ Simpan tiket ini dengan baik</div>
+<div>⚡ Kode hanya berlaku 1x penggunaan</div>
+<div>📍 Wajib ditunjukkan saat check-in</div>
+        </div>
+    </div>
+    `,
                 background: '#1a1d21',
                 color: '#fff',
-                icon: 'info',
                 showCancelButton: true,
                 confirmButtonText: 'Download',
                 cancelButtonText: 'Tutup',
-                confirmButtonColor: '#00a2ff'
+                confirmButtonColor: '#00a2ff',
+                didOpen: () => {
+                    // Generate QR Code
+                    new QRious({
+                        element: document.getElementById('qrCode-' + kode),
+                        value: kode,
+                        size: 150
+                    });
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     const element = document.getElementById("kodeArea");
 
-                    html2canvas(element).then(canvas => {
+                    html2canvas(element, {
+                        scale: 2, // bikin hasil lebih tajam (HD)
+                        useCORS: true, // jaga kalau ada gambar/font
+                        backgroundColor: null // biar transparan tetap aman
+                    }).then(canvas => {
                         const link = document.createElement("a");
-                        link.download = "kode-booking-" + kode + ".png";
-                        link.href = canvas.toDataURL();
+                        link.download = "tiket-booking-" + kode + ".png";
+                        link.href = canvas.toDataURL("image/png");
                         link.click();
                     });
                 }
@@ -349,7 +428,7 @@
             let m = Math.floor((diff % 3600) / 60);
             let s = diff % 60;
 
-            el.innerHTML = `<i class="fas fa-clock mr-1"></i> ${h} jam ${m} menit ${s} detik`;
+         el.innerHTML = `<i class="fas fa-clock"></i> ${h}j ${m}m ${s}d`;
         });
     }, 1000);
 </script>
