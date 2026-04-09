@@ -87,9 +87,9 @@ class DashboardController extends Controller
 // =========================
 $pendingPeminjaman = Sewa::where('status', 'pending')->count();
 
-$pendingPengembalian = Sewa::where('status', 'dikembalikan')->count();
+$pendingPengembalian = Sewa::where('status', 'selesai')->count();
 
-$bookingPending = Sewa::with('playstation')
+$bookingPending = Sewa::with(['playstation', 'user'])
     ->where('status', 'menunggu')
     ->get();
 
