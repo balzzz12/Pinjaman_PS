@@ -176,16 +176,12 @@
                                         </button>
                                     </form>
 
-                                    @elseif($item->status == 'dipinjam')
-                                    <form action="{{ route('petugas.peminjaman.selesai', $item->id) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-warning btn-action btn-sm text-dark">
-                                            <i class="fas fa-undo me-1"></i> Tandai Selesai
-                                        </button>
-                                    </form>
-
                                     @else
-                                    <span class="text-muted small italic">No Action</span>
+                                    @if($item->status == 'dipinjam')
+                                    <span class="text-muted small">Sedang digunakan</span>
+                                    @else
+                                    <span class="text-muted small">-</span>
+                                    @endif
                                     @endif
                                 </div>
                             </td>
