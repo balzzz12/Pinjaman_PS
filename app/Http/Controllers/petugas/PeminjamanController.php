@@ -128,22 +128,22 @@ class PeminjamanController extends Controller
     // =========================
     // LIST PENGEMBALIAN
     // =========================
-  public function pengembalian()
-{
-    $peminjaman = Sewa::with(['user', 'playstation'])
-        ->whereIn('status', ['menunggu_konfirmasi', 'selesai'])
-        ->latest()
-        ->get();
+    public function pengembalian()
+    {
+        $peminjaman = Sewa::with(['user', 'playstation'])
+            ->whereIn('status', ['menunggu_konfirmasi', 'selesai'])
+            ->latest()
+            ->get();
 
-    return view('petugas.peminjaman.pengembalian', compact('peminjaman'));
-}
+        return view('petugas.peminjaman.pengembalian', compact('peminjaman'));
+    }
 
     // =========================
     // SELESAI
     // =========================
     public function selesai(Request $request, $id)
     {
-        
+
         DB::beginTransaction();
 
         try {
@@ -155,10 +155,9 @@ class PeminjamanController extends Controller
             }
 
             $sewa->playstation->increment('stok');
-
             $sewa->update([
                 'status' => 'selesai',
-                'denda' => $request->denda ?? 0
+                'waktu_selesai' => now()
             ]);
 
             DB::commit();
@@ -172,13 +171,13 @@ class PeminjamanController extends Controller
     }
 
     // =========================
-// CETAK 1 USER
-// =========================
-public function cetakSatu($id)
-{
-    $sewa = Sewa::with(['user', 'playstation'])
-        ->findOrFail($id);
+    // CETAK 1 USER
+    // =========================
+    public function cetakSatu($id)
+    {
+        $sewa = Sewa::with(['user', 'playstation'])
+            ->findOrFail($id);
 
-    return view('petugas.peminjaman.cetak_satu', compact('sewa'));
-}
+        return view('petugas.peminjaman.cetak_satu', compact('sewa'));
+    }
 }
