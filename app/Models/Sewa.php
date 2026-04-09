@@ -26,7 +26,6 @@ class Sewa extends Model
         'foto_kembali',
         'waktu_kembali',
         'status_pengembalian',
-        'denda'
     ];
 
     // Relasi ke user
