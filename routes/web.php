@@ -9,6 +9,7 @@ use App\Http\Controllers\UsersController;
 
 // ADMIN
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\LogAktivitasController;
 use App\Http\Controllers\Admin\PlayStationController;
 use App\Http\Controllers\Admin\PeminjamanController as AdminPeminjamanController;
 use App\Http\Controllers\Admin\RoleController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\User\ProductController;
 | PUBLIC
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', [ProductController::class, 'index'])->name('landing');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{id}', [ProductController::class, 'show'])
@@ -43,21 +45,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/register', [AuthController::class, 'store'])->name('register.store');
-
-
-/*
-|--------------------------------------------------------------------------
-| RESET PASSWORD
-|--------------------------------------------------------------------------
-*/
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
-
-Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-
-Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 
 /*
@@ -121,7 +108,7 @@ Route::prefix('admin')
         // ROLES
         Route::get('/roles', [RoleController::class, 'index'])->name('roles');
 
-        // 🔥 PEMINJAMAN (TANPA CREATE)
+        // PEMINJAMAN
         Route::resource('peminjaman', AdminPeminjamanController::class)
             ->except(['create', 'store']);
 
@@ -132,7 +119,11 @@ Route::prefix('admin')
         // KONFIRMASI
         Route::get('/peminjaman/konfirmasi/{id}', [AdminPeminjamanController::class, 'konfirmasi'])
             ->name('peminjaman.konfirmasi');
-});
+
+        // ✅ FIX LOG AKTIVITAS (TARUH DI SINI)
+        Route::get('/log-aktivitas', [LogAktivitasController::class, 'index'])
+            ->name('log-aktivitas.index');
+    });
 
 
 /*
@@ -166,4 +157,4 @@ Route::prefix('petugas')
 
         Route::get('/peminjaman/cetak/{id}', [PeminjamanController::class, 'cetakSatu'])
             ->name('petugas.peminjaman.cetak');
-});
+    });
