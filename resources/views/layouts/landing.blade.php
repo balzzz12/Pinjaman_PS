@@ -131,9 +131,15 @@
 
         /* ===== MAIN CONTAINER SPACING ===== */
         /* Berikan jarak otomatis jika Hero Section tidak ada */
-       .content-wrapper {
-    padding-top: {{ (Request::is('/') || Request::is('products*')) && !Request::is('sewa*') ? '0px' : '140px' }};
-}
+        .content-wrapper {
+            padding-top: {
+                    {
+                    (Request::is('/') || Request::is('products*')) && !Request: :is('sewa*') ? '0px': '140px'
+                }
+            }
+
+            ;
+        }
 
         .main-container {
             background: var(--ps-card);
@@ -239,6 +245,43 @@
         .dropdown-toggle::after {
             display: none !important;
         }
+
+        .btn-login-ps {
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    color: white;
+    padding: 8px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-login-ps:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: var(--ps-accent);
+    color: var(--ps-accent);
+    box-shadow: 0 0 12px rgba(0,162,255,0.4);
+    transform: translateY(-2px);
+}
+
+.btn-register-ps {
+    background: linear-gradient(45deg, #00a2ff, #00439c);
+    border: none;
+    color: white;
+    padding: 8px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0,162,255,0.3);
+}
+
+.btn-register-ps:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 0 25px rgba(0,162,255,0.6);
+    color: white;
+}
     </style>
 </head>
 
@@ -257,68 +300,67 @@
             </div>
         </div>
 
-       <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center">
 
-    @auth
-        <!-- NOTIFICATION -->
-        @if(!Request::is('sewa*'))
-        <div class="notification-wrapper dropdown mr-3">
+            @auth
+            <!-- NOTIFICATION -->
+            @if(!Request::is('sewa*'))
+            <div class="notification-wrapper dropdown mr-3">
 
-            <button class="notification-icon dropdown-toggle"
-                id="notifBtn"
-                data-toggle="dropdown">
+                <button class="notification-icon dropdown-toggle"
+                    id="notifBtn"
+                    data-toggle="dropdown">
 
-                <i class="fas fa-bell"></i>
+                    <i class="fas fa-bell"></i>
 
-                @if(auth()->user()->unreadNotifications->count() > 0)
-                <span class="notification-badge">
-                    {{ auth()->user()->unreadNotifications->count() }}
-                </span>
-                @endif
-            </button>
+                    @if(auth()->user()->unreadNotifications->count() > 0)
+                    <span class="notification-badge">
+                        {{ auth()->user()->unreadNotifications->count() }}
+                    </span>
+                    @endif
+                </button>
 
-            <div class="dropdown-menu dropdown-menu-right p-3"
-                style="width:300px; max-height:300px; overflow-y:auto;">
+                <div class="dropdown-menu dropdown-menu-right p-3"
+                    style="width:300px; max-height:300px; overflow-y:auto;">
 
-                <h6 class="mb-2">Notifikasi</h6>
+                    <h6 class="mb-2">Notifikasi</h6>
 
-             @forelse(auth()->user()->notifications()->latest()->take(10)->get() as $notif)
-                <div class="mb-2 p-2 rounded" style="background: rgba(255,255,255,0.05);">
-                    {{ $notif->data['message'] }}
-                    <br>
-                    <small class="text-muted">
-                        {{ $notif->created_at->diffForHumans() }}
-                    </small>
+                    @forelse(auth()->user()->notifications()->latest()->take(10)->get() as $notif)
+                    <div class="mb-2 p-2 rounded" style="background: rgba(255,255,255,0.05);">
+                        {{ $notif->data['message'] }}
+                        <br>
+                        <small class="text-muted">
+                            {{ $notif->created_at->diffForHumans() }}
+                        </small>
+                    </div>
+                    @empty
+                    <div class="text-muted text-center">Tidak ada notifikasi</div>
+                    @endforelse
+
                 </div>
-                @empty
-                <div class="text-muted text-center">Tidak ada notifikasi</div>
-                @endforelse
-
             </div>
+            @endif
+
+            <!-- LOGOUT -->
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button class="btn btn-logout">
+                    <i class="fas fa-power-off mr-2"></i> LOGOUT
+                </button>
+            </form>
+
+            @else
+            <!-- LOGIN -->
+            <a href="{{ route('login') }}" class="btn btn-login-ps mr-2">
+                <i class="fas fa-sign-in-alt mr-1"></i> Login
+            </a>
+
+            <a href="{{ route('register') }}" class="btn btn-register-ps">
+                <i class="fas fa-user-plus mr-1"></i> Daftar
+            </a>
+            @endauth
+
         </div>
-        @endif
-
-        <!-- LOGOUT -->
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button class="btn btn-logout">
-                <i class="fas fa-power-off mr-2"></i> LOGOUT
-            </button>
-        </form>
-
-    @else
-        <!-- LOGIN -->
-        <a href="{{ route('login') }}" class="btn btn-outline-light mr-2">
-            Login
-        </a>
-
-        <!-- REGISTER -->
-        <a href="{{ route('register') }}" class="btn btn-primary">
-            Daftar
-        </a>
-    @endauth
-
-</div>
     </nav>
 
     {{-- LOGIKA: Hero hanya muncul di halaman Katalog Produk --}}
