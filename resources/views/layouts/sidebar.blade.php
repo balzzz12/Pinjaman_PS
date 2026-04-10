@@ -17,7 +17,7 @@
     }
 
     .fa-playstation {
-        filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
         animation: logo-glow 3s ease-in-out infinite;
     }
 
@@ -87,24 +87,34 @@
 
     /* 6. Animations */
     @keyframes logo-glow {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.7; }
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 0.7;
+        }
     }
 
     /* Custom Scrollbar for Sidebar */
     #accordionSidebar::-webkit-scrollbar {
         width: 4px;
     }
+
     #accordionSidebar::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 10px;
     }
 </style>
 
 @php
-    $dashboardRoute = auth()->user()->role->name === 'admin'
-        ? 'admin.dashboard'
-        : 'petugas.dashboard';
+$dashboardRoute = auth()->user()->role->name === 'admin'
+? 'admin.dashboard'
+: 'petugas.dashboard';
 @endphp
 
 <ul class="navbar-nav bg-ps-gradient sidebar sidebar-dark accordion" id="accordionSidebar">
@@ -118,18 +128,18 @@
 
     <hr class="sidebar-divider my-0" style="opacity: 0.05;">
 
-  {{-- DASHBOARD --}}
-<li class="nav-item {{ Route::is($dashboardRoute) ? 'active' : '' }} mt-3">
-    <a class="nav-link" href="{{ route($dashboardRoute) }}">
-        <i class="fas fa-fw fa-columns"></i>
-        <span>Dashboard</span>
-    </a>
-</li>
+    {{-- DASHBOARD --}}
+    <li class="nav-item {{ Route::is($dashboardRoute) ? 'active' : '' }} mt-3">
+        <a class="nav-link" href="{{ route($dashboardRoute) }}">
+            <i class="fas fa-fw fa-columns"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
 
     <hr class="sidebar-divider" style="opacity: 0.05;">
 
     {{-- ================= ADMIN ================= --}}
-   @if(auth()->user()->role->name === 'admin')
+    @if(auth()->user()->role->name === 'admin')
 
     <div class="sidebar-heading">Admin Panel</div>
 
@@ -147,12 +157,12 @@
         </a>
     </li>
 
-   <li class="nav-item {{ Route::is('admin.users.*') ? 'active' : '' }}">
-    <a class="nav-link" href="{{ route('admin.users.index') }}">
-        <i class="fas fa-fw fa-user-shield"></i>
-        <span>User Management</span>
-    </a>
-</li>
+    <li class="nav-item {{ Route::is('admin.users.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.users.index') }}">
+            <i class="fas fa-fw fa-user-shield"></i>
+            <span>User Management</span>
+        </a>
+    </li>
 
     {{-- FIXED ROUTE --}}
     <li class="nav-item {{ Route::is('admin.peminjaman') ? 'active' : '' }}">
@@ -169,11 +179,18 @@
         </a>
     </li>
 
+    <li class="nav-item {{ Route::is('admin.log-aktivitas.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.log-aktivitas.index') }}">
+            <i class="fas fa-fw fa-clipboard-list"></i>
+            <span>Log Aktivitas</span>
+        </a>
+    </li>
+
     @endif
 
 
     {{-- ================= PETUGAS ================= --}}
-   @if(auth()->user()->role->name === 'petugas')
+    @if(auth()->user()->role->name === 'petugas')
 
     <div class="sidebar-heading">Petugas Panel</div>
 
