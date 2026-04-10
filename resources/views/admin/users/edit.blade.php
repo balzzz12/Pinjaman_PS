@@ -84,25 +84,26 @@
         border-right: none;
         color: #94a3b8;
     }
-.form-select.form-control-ps {
-    border-radius: 12px;
-    padding: 12px 15px;
-    border: 2px solid #e2e8f0;
-    background-color: #f8fafc;
-    height: 48px;
-}
 
-.form-select.form-control-ps:focus {
-    border-color: #0070d1;
-    box-shadow: 0 0 0 4px rgba(0, 112, 209, 0.1);
-    background-color: #fff;
-}
+    .form-select.form-control-ps {
+        border-radius: 12px;
+        padding: 12px 15px;
+        border: 2px solid #e2e8f0;
+        background-color: #f8fafc;
+        height: 48px;
+    }
+
+    .form-select.form-control-ps:focus {
+        border-color: #0070d1;
+        box-shadow: 0 0 0 4px rgba(0, 112, 209, 0.1);
+        background-color: #fff;
+    }
 </style>
 
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-lg-7">
-            
+
             <div class="d-flex align-items-center mb-4">
                 <a href="{{ route('admin.users.index') }}" class="btn btn-back-ps mr-3 shadow-sm">
                     <i class="fas fa-arrow-left"></i>
@@ -122,7 +123,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card-body p-4 p-md-5">
                     <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
                         @csrf
@@ -133,34 +134,34 @@
                             <div class="col-md-12 mb-4">
                                 <label class="form-label-ps">Nama Lengkap</label>
                                 <div class="input-group">
-                                    <input type="text" name="name" 
-                                           class="form-control form-control-ps @error('name') is-invalid @enderror" 
-                                           value="{{ old('name', $user->name) }}" required
-                                           placeholder="Masukkan nama lengkap">
+                                    <input type="text" name="name"
+                                        class="form-control form-control-ps @error('name') is-invalid @enderror"
+                                        value="{{ old('name', $user->name) }}" required
+                                        placeholder="Masukkan nama lengkap">
                                 </div>
                                 @error('name')
-                                    <small class="text-danger mt-1">{{ $message }}</small>
+                                <small class="text-danger mt-1">{{ $message }}</small>
                                 @enderror
                             </div>
 
                             {{-- Email --}}
                             <div class="col-md-12 mb-4">
                                 <label class="form-label-ps">Alamat Email</label>
-                                <input type="email" name="email" 
-                                       class="form-control form-control-ps @error('email') is-invalid @enderror" 
-                                       value="{{ old('email', $user->email) }}" required
-                                       placeholder="email@contoh.com">
+                                <input type="email" name="email"
+                                    class="form-control form-control-ps @error('email') is-invalid @enderror"
+                                    value="{{ old('email', $user->email) }}" required
+                                    placeholder="email@contoh.com">
                                 @error('email')
-                                    <small class="text-danger mt-1">{{ $message }}</small>
+                                <small class="text-danger mt-1">{{ $message }}</small>
                                 @enderror
                             </div>
 
                             {{-- Password --}}
                             <div class="col-md-12 mb-4">
                                 <label class="form-label-ps">Password Baru <span class="text-muted font-weight-normal">(Opsional)</span></label>
-                                <input type="password" name="password" 
-                                       class="form-control form-control-ps"
-                                       placeholder="••••••••">
+                                <input type="password" name="password"
+                                    class="form-control form-control-ps"
+                                    placeholder="••••••••">
                                 <div class="mt-2">
                                     <small class="text-muted">
                                         <i class="fas fa-info-circle mr-1"></i> Biarkan kosong jika tidak ingin mengubah kata sandi.
@@ -171,9 +172,16 @@
                             {{-- Role --}}
                             <div class="col-md-12 mb-4">
                                 <label class="form-label-ps">Role Akses</label>
-                              <select name="role" class="form-select form-control-ps shadow-none" required>
-                                    <option value="1" {{ $user->role_id == 1 ? 'selected' : '' }}>Admin (Full Access)</option>
-                                    <option value="2" {{ $user->role_id == 2 ? 'selected' : '' }}>Petugas (Operator)</option>
+                                <select name="role" class="form-select form-control-ps shadow-none" required>
+                                    <option value="1" {{ $user->role_id == 1 ? 'selected' : '' }}>
+                                        Admin (Full Access)
+                                    </option>
+                                    <option value="2" {{ $user->role_id == 2 ? 'selected' : '' }}>
+                                        Petugas (Operator)
+                                    </option>
+                                    <option value="3" {{ $user->role_id == 3 ? 'selected' : '' }}>
+                                        User (Peminjam)
+                                    </option>
                                 </select>
                             </div>
                         </div>
