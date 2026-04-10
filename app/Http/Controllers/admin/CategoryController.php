@@ -12,7 +12,6 @@ class CategoryController extends Controller
     {
         $categories = Category::all();
 
-        // ✅ FIX PATH
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -22,9 +21,12 @@ class CategoryController extends Controller
             'name' => 'required|string|max:100'
         ]);
 
-        Category::create([
+        $category = Category::create([
             'name' => $request->name
         ]);
+
+        // ✅ LOG TAMBAH
+        logAktivitas('Tambah Kategori', 'Menambahkan kategori: ' . $category->name);
 
         return redirect()->back()
             ->with('success', 'Kategori berhasil ditambahkan');
@@ -32,7 +34,6 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        // ✅ FIX PATH
         return view('admin.categories.edit', compact('category'));
     }
 
@@ -42,18 +43,30 @@ class CategoryController extends Controller
             'name' => 'required|string|max:100'
         ]);
 
+        $oldName = $category->name;
+
         $category->update([
             'name' => $request->name
         ]);
 
-        // ✅ OPTIONAL (biar konsisten admin)
+        // ✅ LOG UPDATE
+        logAktivitas(
+            'Update Kategori',
+            'Dari: ' . $oldName . ' → Menjadi: ' . $category->name
+        );
+
         return redirect()->route('admin.categories.index')
             ->with('success', 'Kategori berhasil diupdate');
     }
 
     public function destroy(Category $category)
     {
+        $nama = $category->name;
+
         $category->delete();
+
+        // ✅ LOG DELETE
+        logAktivitas('Hapus Kategori', 'Menghapus kategori: ' . $nama);
 
         return redirect()->back()
             ->with('success', 'Kategori berhasil dihapus');
