@@ -19,7 +19,8 @@ class ProductController extends Controller
     {
         $categories = Category::withCount('playstations')->get();
 
-        $playstations = PlayStation::with('category');
+        $playstations = PlayStation::with('category')
+            ->where('stok', '>', 0); // 🔥 hanya tampil yg tersedia
 
         if ($request->filled('category')) {
             $playstations->where('category_id', $request->category);
@@ -27,7 +28,7 @@ class ProductController extends Controller
 
         return view('user.products.index', [
             'categories'   => $categories,
-            'playstations' => $playstations->get()
+            'playstations' => $playstations->latest()->get()
         ]);
     }
 
@@ -36,7 +37,8 @@ class ProductController extends Controller
     // =======================
     public function create($id)
     {
-        $ps = PlayStation::findOrFail($id);
+        $ps = PlayStation::where('stok', '>', 0)->findOrFail($id);
+
         return view('user.sewa.create', compact('ps'));
     }
 
@@ -45,16 +47,28 @@ class ProductController extends Controller
     // =======================
     public function store(Request $request)
     {
+        $request->validate([
+           'playstation_id' => 'required|exists:play_stations,id',
+            'durasi'         => 'required|integer|min:1|max:30',
+            'aksi'           => 'required|in:pinjam,booking',
+
+            'nama'   => 'required|string|max:100',
+            'email'  => 'required|email',
+            'no_ktp' => 'required|string|max:20',
+            'hp'     => 'required|string|max:15',
+            'alamat' => 'required|string',
+
+            'dokumen.*' => 'nullable|string'
+        ]);
+
         DB::beginTransaction();
 
         try {
 
-            $ps = PlayStation::where('id', $request->playstation_id)
-                ->lockForUpdate()
-                ->firstOrFail();
+            $ps = PlayStation::lockForUpdate()
+                ->findOrFail($request->playstation_id);
 
             if ($request->aksi === 'pinjam' && $ps->stok < 1) {
-                DB::rollBack();
                 return back()->with('error', 'Stok sedang habis.');
             }
 
@@ -70,23 +84,30 @@ class ProductController extends Controller
                 'alamat' => $request->alamat
             ]);
 
-            Sewa::create([
+            $sewa = Sewa::create([
                 'user_id'        => $user->id,
                 'playstation_id' => $ps->id,
                 'durasi'         => $request->durasi,
-                'dokumen'        => json_encode($request->input('dokumen', [])),
+                'dokumen'        => json_encode($request->dokumen ?? []),
                 'aksi'           => $request->aksi,
                 'total_harga'    => $total,
                 'status'         => $request->aksi === 'pinjam' ? 'menunggu' : 'booking'
             ]);
 
+            // ✅ LOG AKTIVITAS
+            logAktivitas(
+                'Sewa Produk',
+                'User menyewa PS: ' . $ps->nama . ' | ID Sewa: ' . $sewa->id
+            );
+
             DB::commit();
 
-            return back()->with('success', 'Sewa berhasil! Silahkan tunggu petugas ACC');
+            return redirect()->route('sewa.riwayat')
+                ->with('success', 'Berhasil! Tunggu persetujuan petugas.');
         } catch (\Exception $e) {
 
             DB::rollBack();
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan sistem.');
         }
     }
 
@@ -112,6 +133,10 @@ class ProductController extends Controller
             ->where('user_id', Auth::id())
             ->findOrFail($id);
 
+        if ($sewa->status !== 'dipinjam') {
+            return back()->with('error', 'Belum bisa dikembalikan.');
+        }
+
         return view('user.sewa.kembali', compact('sewa'));
     }
 
@@ -120,18 +145,19 @@ class ProductController extends Controller
     // =======================
     public function kembali(Request $request, $id)
     {
+        $request->validate([
+            'kondisi' => 'required|in:baik,rusak',
+            'catatan_kembali' => 'nullable|string',
+            'foto_kembali' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+        ]);
+
         $sewa = Sewa::where('user_id', Auth::id())
+            ->lockForUpdate()
             ->findOrFail($id);
 
         if ($sewa->status !== 'dipinjam') {
             return back()->with('error', 'Barang belum dipinjam.');
         }
-
-        $request->validate([
-            'kondisi' => 'required',
-            'catatan_kembali' => 'nullable',
-            'foto_kembali' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
-        ]);
 
         if ($request->hasFile('foto_kembali')) {
             $foto = $request->file('foto_kembali')
@@ -140,13 +166,19 @@ class ProductController extends Controller
             $sewa->foto_kembali = $foto;
         }
 
-        $sewa->status = 'menunggu_konfirmasi';
-        $sewa->kondisi = $request->kondisi;
-        $sewa->catatan_kembali = $request->catatan_kembali;
+        $sewa->update([
+            'status'           => 'menunggu_konfirmasi',
+            'kondisi'          => $request->kondisi,
+            'catatan_kembali'  => $request->catatan_kembali
+        ]);
 
-        $sewa->save();
+        // ✅ LOG AKTIVITAS
+        logAktivitas(
+            'Pengajuan Pengembalian',
+            'User mengajukan pengembalian | ID Sewa: ' . $sewa->id
+        );
 
         return redirect()->route('sewa.riwayat')
-            ->with('success', 'Menunggu konfirmasi petugas');
+            ->with('success', 'Menunggu konfirmasi petugas.');
     }
 }
