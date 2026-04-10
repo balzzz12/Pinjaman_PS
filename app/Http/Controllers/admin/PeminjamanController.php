@@ -13,7 +13,13 @@ class PeminjamanController extends Controller
 {
     public function index()
     {
+        logAktivitas(
+            'Akses Halaman Peminjaman',
+            'Admin membuka halaman peminjaman'
+        );
+
         $peminjaman = Sewa::with(['user', 'playstation'])->latest()->get();
+
         return view('admin.peminjaman.index', compact('peminjaman'));
     }
 
@@ -26,6 +32,12 @@ class PeminjamanController extends Controller
     public function edit($id)
     {
         $sewa = Sewa::findOrFail($id);
+
+        // ✅ LOG EDIT (dibuka halaman edit)
+        logAktivitas(
+            'Buka Form Edit',
+            'ID: ' . $sewa->id . ' | User: ' . $sewa->user->name
+        );
 
         return view('admin.peminjaman.edit', [
             'sewa' => $sewa,
@@ -45,7 +57,8 @@ class PeminjamanController extends Controller
             'status' => 'nullable|string'
         ]);
 
-        // 🔥 Kurangi stok kalau jadi dipinjam
+        $statusLama = $sewa->status;
+
         if ($request->status == 'dipinjam' && $sewa->status != 'dipinjam') {
 
             $ps = PlayStation::find($sewa->playstation_id);
@@ -59,6 +72,15 @@ class PeminjamanController extends Controller
 
         $sewa->update($request->only(['user_id', 'playstation_id', 'durasi', 'status']));
 
+        // ✅ LOG UPDATE DETAIL
+        logAktivitas(
+            'Update Peminjaman',
+            'ID: ' . $sewa->id .
+                ' | User: ' . $sewa->user->name .
+                ' | PS: ' . $sewa->playstation->nama .
+                ' | Status: ' . $statusLama . ' → ' . $sewa->status
+        );
+
         return redirect()->route('admin.peminjaman.index')
             ->with('success', 'Data berhasil diupdate');
     }
@@ -67,15 +89,19 @@ class PeminjamanController extends Controller
     {
         $sewa = Sewa::findOrFail($id);
 
+        $info = 'User: ' . $sewa->user->name . ' | PS: ' . $sewa->playstation->nama;
+
         if ($sewa->status !== 'selesai') {
             $sewa->playstation->increment('stok');
         }
 
         $sewa->delete();
 
+        // ✅ LOG DELETE
+        logAktivitas('Hapus Peminjaman', $info);
+
         return back()->with('success', 'Data berhasil dihapus');
     }
-
     public function konfirmasi($id)
     {
         $sewa = Sewa::findOrFail($id);
@@ -86,6 +112,14 @@ class PeminjamanController extends Controller
             $sewa->update([
                 'status' => 'selesai'
             ]);
+
+            // ✅ LOG KONFIRMASI
+            logAktivitas(
+                'Konfirmasi Pengembalian',
+                'ID: ' . $sewa->id .
+                    ' | User: ' . $sewa->user->name .
+                    ' | PS: ' . $sewa->playstation->nama
+            );
 
             return back()->with('success', 'Pengembalian dikonfirmasi');
         }
@@ -99,6 +133,9 @@ class PeminjamanController extends Controller
             ->whereIn('status', ['menunggu_konfirmasi', 'selesai'])
             ->latest()
             ->get();
+
+        // ✅ LOG AKSES HALAMAN
+        logAktivitas('Akses Halaman Pengembalian', 'Admin membuka halaman pengembalian');
 
         return view('admin.peminjaman.pengembalian', compact('peminjaman'));
     }
