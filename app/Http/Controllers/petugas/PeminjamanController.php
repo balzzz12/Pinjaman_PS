@@ -23,7 +23,6 @@ class PeminjamanController extends Controller
             ->latest()
             ->get();
 
-        // ✅ FIX VIEW
         return view('petugas.peminjaman.index', compact('peminjaman'));
     }
 
@@ -35,25 +34,27 @@ class PeminjamanController extends Controller
         DB::beginTransaction();
 
         try {
-
             $sewa = Sewa::with(['playstation', 'user'])
                 ->lockForUpdate()
                 ->findOrFail($id);
 
             if ($sewa->status !== 'menunggu') {
-                DB::rollBack();
                 return back()->with('error', 'Transaksi sudah diproses.');
             }
 
             if ($sewa->playstation->stok < 1) {
-                DB::rollBack();
                 return back()->with('error', 'Stok sudah habis.');
             }
 
+            $bookingCode = $sewa->booking_code ?? 'BOOK-' . strtoupper(Str::random(6));
+
             $sewa->update([
                 'status' => 'disetujui',
-                'booking_code' => $sewa->booking_code ?? 'BOOK-' . strtoupper(Str::random(6)),
+                'booking_code' => $bookingCode,
             ]);
+
+            // ✅ LOG
+            logAktivitas('Setujui Peminjaman', 'ID Sewa: ' . $sewa->id);
 
             $sewa->user->notify(new PeminjamanDisetujui($sewa));
 
@@ -61,31 +62,29 @@ class PeminjamanController extends Controller
 
             return back()->with('success', 'Peminjaman disetujui.');
         } catch (\Exception $e) {
-
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan sistem.');
         }
     }
 
     // =========================
-    // SERAHKAN
+    // SERAHKAN BARANG
     // =========================
     public function serahkan($id)
     {
         DB::beginTransaction();
 
         try {
-
-            $sewa = Sewa::with('playstation')->findOrFail($id);
+            $sewa = Sewa::with('playstation')
+                ->lockForUpdate()
+                ->findOrFail($id);
 
             if ($sewa->status !== 'disetujui') {
-                DB::rollBack();
-                return back()->with('error', 'Belum disetujui.');
+                return back()->with('error', 'Harus disetujui dulu.');
             }
 
             if ($sewa->playstation->stok < 1) {
-                DB::rollBack();
-                return back()->with('error', 'Stok habis saat serah barang.');
+                return back()->with('error', 'Stok habis.');
             }
 
             $sewa->playstation->decrement('stok');
@@ -95,11 +94,13 @@ class PeminjamanController extends Controller
                 'waktu_mulai' => now()
             ]);
 
+            // ✅ LOG
+            logAktivitas('Serahkan Barang', 'ID Sewa: ' . $sewa->id);
+
             DB::commit();
 
             return back()->with('success', 'Barang berhasil diserahkan.');
         } catch (\Exception $e) {
-
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan sistem.');
         }
@@ -120,6 +121,9 @@ class PeminjamanController extends Controller
             'status' => 'ditolak'
         ]);
 
+        // ✅ LOG
+        logAktivitas('Tolak Peminjaman', 'ID Sewa: ' . $sewa->id);
+
         $sewa->user->notify(new PeminjamanDitolak($sewa));
 
         return back()->with('success', 'Peminjaman ditolak.');
@@ -139,39 +143,42 @@ class PeminjamanController extends Controller
     }
 
     // =========================
-    // SELESAI
+    // SELESAI (PENGEMBALIAN)
     // =========================
     public function selesai(Request $request, $id)
     {
-
         DB::beginTransaction();
 
         try {
-
-            $sewa = Sewa::with('playstation')->findOrFail($id);
+            $sewa = Sewa::with('playstation')
+                ->lockForUpdate()
+                ->findOrFail($id);
 
             if ($sewa->status !== 'menunggu_konfirmasi') {
                 return back()->with('error', 'Belum ada pengajuan pengembalian.');
             }
 
             $sewa->playstation->increment('stok');
+
             $sewa->update([
                 'status' => 'selesai',
                 'waktu_selesai' => now()
             ]);
 
+            // ✅ LOG
+            logAktivitas('Selesaikan Pengembalian', 'ID Sewa: ' . $sewa->id);
+
             DB::commit();
 
-            return back()->with('success', 'Transaksi selesai + denda diproses');
+            return back()->with('success', 'Pengembalian selesai.');
         } catch (\Exception $e) {
-
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan sistem');
         }
     }
 
     // =========================
-    // CETAK 1 USER
+    // CETAK 1 DATA
     // =========================
     public function cetakSatu($id)
     {
